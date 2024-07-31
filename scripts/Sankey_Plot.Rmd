@@ -20,8 +20,8 @@ library(here)
 ```{r}
 
 # Load energy projection data
-links<-read.csv(here("raw_data/DAPSIR/DSPIR_Gippsland_links2.csv"))
-nodes<-read.csv(here("raw_data/DAPSIR/DPSIR_Gippsland_nodes2.csv"))
+links<-read.csv(here("raw_data/DAPSIR/DSPIR_Gippsland_links.csv"))
+nodes<-read.csv(here("raw_data/DAPSIR/DPSIR_Gippsland_nodes.csv"))
 
 
 length(unique(c(links$source, links$target)))
