@@ -83,7 +83,7 @@ ggplot(wind_sp_freq, aes(x = Freq)) +
 ```
 
 ```{r}
-ggsave(here("figures/Num_species_within_num_farms.png"), width = 4, height = 2)
+ggsave(here("figures/Figure3A_num_species_within_num_farms.png"), width = 4, height = 2)
 ```
 
 ```{r}
@@ -142,7 +142,7 @@ ggplot(habitat_wind_sp_only, aes(x = Industry, y = Count, fill = factor(Habitat,
 
 
 ```{r}
-ggsave(here("figures/Num_species_per_farm_by_habitat.png"), width = 4, height = 2)
+ggsave(here("figures/Figure3B_num_species_per_farm_by_habitat.png"), width = 4, height = 2)
 ```
 ```{r}
 table(wind_sp_only2$Industry)
@@ -304,7 +304,7 @@ ggplot(count_habitat_sp_only, aes(x = Industry2, y = Count, fill = factor(Habita
   scale_fill_manual(values=c('violet', 'lightblue', 'darkblue', "darkgreen"))
 ```
 ```{r}
-ggsave(here("figures/Num_species_per_industry_by_habitat.png"), width = 4, height = 2)
+ggsave(here("figures/Figure3C_num_species_per_industry_by_habitat.png"), width = 4, height = 2)
 ```
 
 ```{r}
