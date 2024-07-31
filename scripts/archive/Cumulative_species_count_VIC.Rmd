@@ -1,0 +1,144 @@
+---
+title: "Untitled"
+author: "Caitie"
+date: "2023-09-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggplot2)
+```
+
+# Load data
+
+```{r}
+sp_dat<-read.csv(here("BECRC/raw_data/EIA_species/Offshore_EIA_species_database_19Oct2023.csv")) 
+
+sub_sp_dat<-sp_dat %>% 
+  filter(!Type == "Registered Aboriginal Places within the Study Area",
+         !Type == "TECs",
+         !Type == "Modeled EVC",
+         !Name == "",
+         !Common_name == "") %>% 
+  mutate(Common_name = str_squish(Common_name),
+         Name = str_squish(Name),
+         Name = str_to_title(Name),
+         Name2 = ifelse(Name == "Pterostylis X toveyana", "Pterostylis X toveyana", 
+            ifelse(Name == "Pterostylis X Ingens", "Pterostylis X Ingens", word(Name, 1,2, sep=" "))))  %>% #remove subspecies
+  filter(!Name2 %in% c("Nannoperca Sp.", "Corybas Sp.", "Rhodope Species", "Prasophyllum Sp.")) # remove not identified to species
+```
+
+
+```{r}
+sp_only<-sub_sp_dat %>% 
+  dplyr::select(Wind_Farm, Name2) %>% 
+  filter(!duplicated(.))
+
+sp_count<-as.data.frame(table(sp_only$Name2)) %>% 
+  rename(Species = Var1)
+```
+
+# EPBC species
+
+```{r}
+epbc<-read.csv(here("BECRC/raw_data/EPBC/EPBC_species.csv")) %>% 
+  mutate(Species = str_squish(Species),
+         Species = str_to_title(Species)) %>% 
+  dplyr::select(Species, Category)
+```
+
+# Plot of species occurence across wind farms
+
+```{r}
+sp_count2<-sp_count %>% 
+  left_join(., epbc) %>% 
+  mutate(Category = ifelse(is.na(Category) == TRUE, "Not listed", as.character(Category))) %>% 
+  filter(!duplicated(.))
+
+
+ggplot(sp_count2, aes(x = Freq)) +
+  geom_bar() +
+  ylab("Number of species") +
+  xlab("Number of farms containing unique or similar species") +
+  theme_bw()
+```
+
+```{r}
+ggsave(here("BECRC/figures/Num_species_within_num_farms.png"))
+```
+
+```{r}
+ggplot(sp_count2, aes(x = fct_infreq(Category))) +
+  geom_bar() +
+  ylab("Number of species (all farms)") +
+  xlab("EPBC Status") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+```{r}
+ggsave(here("BECRC/figures/Num_species_epbc_status.png"))
+```
+
+
+
+# Number of time a species is within a farm
+
+```{r}
+sub_sp_count<-sp_count %>% 
+  filter(Freq>1)
+
+sub_sp_only<-sp_only %>% 
+  filter(Name2 %in% sub_sp_count$Species) %>% 
+  left_join(., epbc, by = c("Name2" = "Species")) %>% 
+  mutate(Category = ifelse(is.na(Category) == TRUE, "Not listed", as.character(Category))) %>% 
+  filter(!duplicated(.))
+
+ggplot(sub_sp_only, aes(x = fct_infreq(Name2))) +
+  geom_bar(aes(fill = Category)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip() +
+  xlab("Species") +
+  ylab("Number of farms")
+
+
+```
+
+```{r}
+ggsave(here("BECRC/figures/Num_farms_per_species_epbc_status.png"), height = 15, width = 7)
+```
+
+
+# Number of species within each farm and number of cumulative species across farms
+
+```{r}
+cumulative<-sp_only %>% 
+  mutate(Wind_Farm = "Cumulative") %>% 
+  filter(!duplicated(Name2))
+
+sp_only2<-rbind(sp_only, cumulative)
+
+ggplot(sp_only2, aes(x = fct_infreq(Wind_Farm))) +
+  geom_bar() +
+  ylab("Number of species assessed") +
+  xlab("Offshore wind farm") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip()
+```
+
+```{r}
+ggsave(here("BECRC/figures/Num_species_per_farm.png"))
+```
+```{r}
+table(sp_only2$Wind_Farm)
+```
+```{r}
+write.csv(sp_only2, here("BECRC/output_data/Wind_farm_species_counts.csv"))
+```
+

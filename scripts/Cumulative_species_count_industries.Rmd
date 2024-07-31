@@ -1,0 +1,313 @@
+---
+title: "Untitled"
+author: "Caitie"
+date: "2023-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggplot2)
+```
+
+# Load data
+
+
+```{r}
+#sp_dat<-read.csv(here("raw_data/Industry_species/Offshore_EIA_species_INDUSTRY_EPBC_only_31.01.24.csv"))
+
+sp_dat<-read.csv(here("raw_data/Industry_species/Offshore_EIA_species_INDUSTRY_EPBC_only_31.01.24.csv"))
+
+sub_sp_dat<-sp_dat %>% 
+  dplyr::select(Industry, Scientific_name, Common_name, EPBC.status, IUCN.system, Seabird) %>% 
+  rename(Name = Scientific_name) %>% 
+  mutate(Common_name = str_squish(Common_name),
+         Name = str_squish(Name),
+         Name = str_to_title(Name)) %>% 
+  filter(Name != "") %>% 
+  filter(!Name %in% c("Soleganthus Sp.", "Nannoperca Sp. 1", "Solegnathus Sp. 1")) %>% 
+  filter(!EPBC.status == "Extinct",
+         !EPBC.status == "VIC status only") #EPBC species only
+  
+  
+#word(Name, 1,2, sep=" "))
+
+
+```
+
+
+```{r}
+sp_only<-sub_sp_dat %>% 
+  dplyr::select(Industry, Name) %>% 
+  filter(!duplicated(.))
+
+sp_count<-as.data.frame(table(sp_only$Name)) %>% 
+  rename(Species = Var1)
+
+
+```
+
+
+
+# Plot of species occurence across wind farms
+
+```{r}
+wind_sp<-sub_sp_dat %>% 
+  filter(Industry %in% c("Greater Gippsland", "Southern Winds", "Seadragon", "Star of the South", "Victoria Offshore Windfarm project"))
+
+wind_sp_only<-wind_sp %>% 
+  dplyr::select(Industry, Name, IUCN.system, EPBC.status, Seabird) %>% 
+  filter(!duplicated(.))
+
+wind_sp_count<-as.data.frame(table(wind_sp_only$Name)) %>% 
+  rename(Species = Var1)
+```
+
+# Number of species within each farm and number of cumulative species across farms
+
+```{r}
+wind_sp_freq<-as.data.frame(table(wind_sp_only$Name)) %>% 
+  rename(Species = Var1)
+
+
+ggplot(wind_sp_freq, aes(x = Freq)) +
+  geom_bar() +
+  ylab("Additional species") +
+  xlab("Wind farms") +
+  theme_bw()
+```
+
+```{r}
+ggsave(here("figures/Num_species_within_num_farms.png"), width = 4, height = 2)
+```
+
+```{r}
+table(wind_sp_freq$Freq)
+```
+
+
+```{r}
+wind_cumulative<-wind_sp_only %>% 
+  mutate(Industry = "Cumulative") %>% 
+  filter(!duplicated(Name))
+
+wind_sp_only2<-rbind(wind_sp_only, wind_cumulative) %>% 
+  mutate(IUCN.system2 = ifelse(IUCN.system %in% c("Terrestrial/Freshwater", "Terrestrial/Freshwater/Marine", "Terrestrial/Marine"  , "Freshwater/Marine"), "Mixed", as.character(IUCN.system)))
+
+```
+
+```{r}
+ggplot(wind_sp_only2, aes(x = fct_infreq(Industry))) +
+  geom_bar() +
+  ylab("Number of species assessed") +
+  xlab("Offshore wind farm") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip()
+```
+
+```{r}
+table(wind_sp_only2$Industry)
+```
+
+```{r}
+#ggsave(here("figures/Num_species_per_farm_Jan2024.png"))
+```
+
+## Terrestrial vs marine species
+
+```{r}
+habitat_wind_sp_only <-wind_sp_only2 %>% 
+  group_by(Industry, IUCN.system2) %>% 
+  summarise(Count = length(unique(Name))) %>% 
+  rename(Habitat = IUCN.system2) %>% 
+  mutate(Industry = ifelse(Industry == "Victoria Offshore Windfarm project", "Victoria Offshore", as.character(Industry)))
+
+
+ggplot(habitat_wind_sp_only, aes(x = Industry, y = Count, fill = factor(Habitat, levels=c("Mixed", "Freshwater", "Marine", "Terrestrial")))) +
+  geom_bar(position = "stack", stat = "identity") +
+  ylab("Species assessed") +
+  xlab("Offshore wind farm") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip() +
+  labs(fill = "Habitat") +
+  scale_fill_manual(values=c('violet', 'lightblue', 'darkblue', "darkgreen"))
+```
+
+
+```{r}
+ggsave(here("figures/Num_species_per_farm_by_habitat.png"), width = 4, height = 2)
+```
+```{r}
+table(wind_sp_only2$Industry)
+```
+```{r}
+write.csv(wind_sp_only2, here("output_data/Wind_farm_species_counts_Jan2024.csv"))
+```
+
+```{r}
+sub<-wind_sp_only2 %>% 
+  filter(Industry == "Cumulative")
+table(sub$IUCN.system2)
+```
+
+
+## EPBC listed species
+
+```{r}
+epbc_wind_sp_only <-wind_sp_only2 %>% 
+  group_by(Industry, EPBC.status) %>% 
+  summarise(Count = length(unique(Name))) %>% 
+  rename(EPBC = EPBC.status) %>% 
+  mutate(Industry = ifelse(Industry == "Victoria Offshore Windfarm project", "Victoria Offshore", as.character(Industry)))
+
+
+ggplot(epbc_wind_sp_only, aes(x = Industry, y = Count, fill = factor(EPBC, levels=c("VIC status only", "Listed", "Conservation Dependent", "Vulnerable", "Endangered", "Critically Endangered")))) +
+  geom_bar(position = "stack", stat = "identity") +
+  ylab("Number of species assessed") +
+  xlab("Offshore wind farm") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip() +
+  labs(fill = "EPBC status") +
+  scale_fill_manual(values=c('grey', 'lightblue', 'cornflowerblue', "darkorange3", "brown3", "darkred"))
+```
+
+```{r}
+ggsave(here("BECRC/figures/Num_farms_per_species_epbc_status.png"), height = 15, width = 7)
+```
+
+```{r}
+table(wind_cumulative$EPBC)
+```
+
+
+# Number of species within each farm and number of cumulative species across farms
+
+```{r}
+cumulative<-sp_only %>% 
+  mutate(Industry = "Cumulative") %>% 
+  filter(!duplicated(Name))
+
+sp_only2<-rbind(sp_only, cumulative)
+```
+
+```{r}
+ggplot(sp_only2, aes(x = fct_infreq(Industry))) +
+  geom_bar() +
+  ylab("Number of species") +
+  xlab("Industry") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip()
+```
+
+```{r}
+
+sp_only3<-sp_only %>% 
+  mutate(Industry2 = ifelse(Industry %in% c("Southern and Eastern Scalefish and Shark Fishery (SESSF", "Bass Strait Central Zone Scallop Sub-Fishery", "Southern Squid Jig Su-Fishery", "Midwater Trawel Sub-Fishery of the Small Pelagic Fishery"), "Fishing", 
+                            ifelse(Industry %in% c("Beach: Otway Offshore Operations Beach ", "Gbenergy: Golden Beach Offshore Drilling ",  "Cooper Energy Bass Strait/Gippsland region", "GBEnergy: Golden Beach Geophysical and Geotechnical Investigations", "Woodside Energy: Minerva Plug and abandonment + field maintainence", "Beach Energy: BassGas Offshore Operations ","SGH Energy: Longtom Operations", "TPG: Tasmanian Gas Pipeline Offshore" ,  "Esso Australia Resources: Bass Strait",  "TGP: Tasmanian Gas Pipeline Offshore"), "Oil and Gas", 
+                                   ifelse(Industry %in% c("Greater Gippsland", "Southern Winds", "Seadragon", "Star of the South", "Victoria Offshore Windfarm project"), "Offshore wind", NA)))) %>% 
+  filter(!Industry == "Cumulative") %>% 
+  dplyr::select(-Industry) %>% 
+  filter(!duplicated(.))
+
+cumulative<-sp_only3 %>% 
+  mutate(Industry = "Cumulative") %>% 
+  filter(!duplicated(Name)) %>% 
+  dplyr::select(-Industry) %>% 
+  mutate(Industry2 = "Cumulative")
+
+sp_only3<-rbind(sp_only3, cumulative)
+```
+
+
+```{r}
+ggplot(sp_only3, aes(x = fct_infreq(Industry2))) +
+  geom_bar() +
+  ylab("Number of species assessed") +
+  xlab("Industry") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip()
+```
+
+```{r}
+ggsave(here("figures/Num_species_per_industry.png"))
+```
+
+```{r}
+table(sp_only3$Industry2)
+```
+
+```{r}
+industry_sp_freq<-sp_only3 %>% 
+  filter(Industry2 != "Cumulative") 
+
+industry_sp_freq2<-as.data.frame(table(industry_sp_freq$Name))
+
+
+ggplot(industry_sp_freq2, aes(x = Freq)) +
+  geom_bar() +
+  ylab("Additional species") +
+  xlab("Industries") +
+  theme_bw()
+```
+```{r}
+table(industry_sp_freq2$Freq)
+```
+
+
+# Habitat Industry
+
+```{r}
+habitat_sp_only<-sub_sp_dat %>% 
+  dplyr::select(Industry, Name, IUCN.system) %>% 
+  filter(!duplicated(.)) %>% 
+  mutate(IUCN.system2 = ifelse(IUCN.system == "Terrstrial/Marine", "Terrestrial/Marine", 
+                               ifelse(IUCN.system == "Terrestria/Marine", "Terrestrial/Marine",
+                                      ifelse(IUCN.system == "Terrestrial Freshwater", "Terrestrial/Freshwater",
+                                             ifelse(IUCN.system == "Terrestrial, Freshwater, Marine", "Terrestrial/Freshwater/Marine", as.character(IUCN.system))))),
+         IUCN.system2 = ifelse(IUCN.system2 %in% c("Terrestrial/Freshwater", "Terrestrial/Freshwater/Marine", "Terrestrial/Marine", "Freshwater/Marine"), "Mixed",
+                              as.character(IUCN.system2)),
+         Industry2 = ifelse(Industry %in% c("Southern and Eastern Scalefish and Shark Fishery (SESSF", "Bass Strait Central Zone Scallop Sub-Fishery", "Southern Squid Jig Su-Fishery", "Midwater Trawel Sub-Fishery of the Small Pelagic Fishery"), "Fishing", 
+                            ifelse(Industry %in% c("Beach: Otway Offshore Operations Beach ", "Gbenergy: Golden Beach Offshore Drilling ",  "Cooper Energy Bass Strait/Gippsland region", "GBEnergy: Golden Beach Geophysical and Geotechnical Investigations", "Woodside Energy: Minerva Plug and abandonment + field maintainence", "Beach Energy: BassGas Offshore Operations ","SGH Energy: Longtom Operations", "TGP: Tasmanian Gas Pipeline Offshore" ,"TPG: Tasmanian Gas Pipeline Offshore",  "Esso Australia Resources: Bass Strait"), "Oil and Gas", 
+                                   ifelse(Industry %in% c("Greater Gippsland", "Southern Winds", "Seadragon", "Star of the South", "Victoria Offshore Windfarm project"), "Offshore wind", NA)))) 
+
+cumulative2<-habitat_sp_only %>% 
+  mutate(Industry2 = "Cumulative") %>% 
+  filter(!duplicated(Name))
+
+habitat_sp_only2<-rbind(habitat_sp_only, cumulative2) 
+
+count_habitat_sp_only <- habitat_sp_only2 %>% 
+  group_by(Industry2, IUCN.system2) %>% 
+  summarise(Count = length(unique(Name))) %>% 
+  rename(Habitat = IUCN.system2)
+```
+
+```{r}
+ggplot(count_habitat_sp_only, aes(x = Industry2, y = Count, fill = factor(Habitat, levels=c("Mixed", "Freshwater", "Marine", "Terrestrial")))) +
+  geom_bar(position = "stack", stat = "identity") +
+  ylab("Number of species assessed") +
+  xlab("Industry") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  coord_flip() +
+  labs(fill = "Habitat") +
+  scale_fill_manual(values=c('violet', 'lightblue', 'darkblue', "darkgreen"))
+```
+```{r}
+ggsave(here("figures/Num_species_per_industry_by_habitat.png"), width = 4, height = 2)
+```
+
+```{r}
+table(habitat_sp_only2$IUCN.system2)
+```
+

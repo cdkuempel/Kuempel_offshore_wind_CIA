@@ -1,0 +1,92 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-12-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#install.packages("networkD3")
+# Load package
+library(networkD3)
+library(tidyverse)
+library(here)
+ 
+```
+
+```{r}
+
+# Load energy projection data
+links<-read.csv(here("raw_data/DAPSIR/DSPIR_Gippsland_links2.csv"))
+nodes<-read.csv(here("raw_data/DAPSIR/DPSIR_Gippsland_nodes2.csv"))
+
+
+length(unique(c(links$source, links$target)))
+length(nodes$node)
+```
+
+```{r}
+test<-full_join(links, nodes, by = c("source" = "X")) %>% 
+  rename(Source_name = node) %>% 
+  full_join(., nodes, by = c("target" = "X")) %>% 
+  rename(Target_name = node)
+
+table(test$Source_name)
+table(test$Target_name)
+```
+```{r}
+test2<-test %>% 
+  filter(target %in% c(20,21,22))
+```
+
+
+
+```{r}
+ 
+# Thus we can plot it
+p <- sankeyNetwork(Links = links, Nodes = nodes, Source = "source",
+              Target = "target", Value = "value", NodeID = "node",
+              units = "TWh", fontSize = 30, nodeWidth = 30)
+p
+```
+
+
+```{r}
+# save the widget
+ library(htmlwidgets)
+ saveWidget(p, file=paste0(here("figures/sankeyConstructionGippsland.html")))
+```
+
+
+
+
+
+```{r}
+# Load energy projection data
+links2<-read.csv(here("raw_data/DAPSIR/Theoretical_links.csv"))
+nodes2<-read.csv(here("raw_data/DAPSIR/Theoretical_nodes.csv"))
+
+
+length(unique(c(links2$source, links2$target)))
+length(nodes2$node)
+```
+
+
+```{r}
+ 
+# Thus we can plot it
+t <- sankeyNetwork(Links = links2, Nodes = nodes2, Source = "source",
+              Target = "target", Value = "value", NodeID = "node",
+              units = "TWh", fontSize = 30, nodeWidth = 30)
+t
+```
+
+
+```{r}
+ saveWidget(t, file=paste0(here("figures/sankeyTheoretical.html")))
+```
+
+
