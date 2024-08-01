@@ -1,0 +1,122 @@
+Industry1,Industry2,Value
+Aquaculture        ,Aquaculture        ,NA
+Aquaculture        ,Commercial fishing  ,1989
+Aquaculture        ,IPAs               ,47
+Aquaculture        ,MPAs               ,1291
+Aquaculture        ,Oil lease areas      ,1537
+Aquaculture        ,Petroleum pipelines ,4
+Aquaculture        ,Ports and terminals  ,30
+Aquaculture        ,Recreational boat use,230
+Aquaculture        ,Shipping           ,1329
+Aquaculture        ,Underwater cables   ,0
+Aquaculture        ,Windfarm areas      ,123
+Commercial fishing  ,Aquaculture        ,1989
+Commercial fishing  ,Commercial fishing  ,NA
+Commercial fishing  ,IPAs               ,124663
+Commercial fishing  ,MPAs               ,648224
+Commercial fishing  ,Oil lease areas      ,1143603
+Commercial fishing  ,Petroleum pipelines ,8090
+Commercial fishing  ,Ports and terminals  ,243
+Commercial fishing  ,Recreational boat use,79253
+Commercial fishing  ,Shipping           ,287175
+Commercial fishing  ,Underwater cables   ,8613
+Commercial fishing  ,Windfarm areas      ,18027
+IPAs               ,Aquaculture        ,47
+IPAs               ,Commercial fishing  ,124663
+IPAs               ,IPAs               ,NA
+IPAs               ,MPAs               ,51084
+IPAs               ,Oil lease areas      ,30228
+IPAs               ,Petroleum pipelines ,0
+IPAs               ,Ports and terminals  ,13
+IPAs               ,Recreational boat use,0
+IPAs               ,Shipping           ,6403
+IPAs               ,Underwater cables   ,0
+IPAs               ,Windfarm areas      ,0
+MPAs               ,Aquaculture        ,1291
+MPAs               ,Commercial fishing  ,648224
+MPAs               ,IPAs               ,51084
+MPAs               ,MPAs               ,NA
+MPAs               ,Oil lease areas      ,747424
+MPAs               ,Petroleum pipelines ,1271
+MPAs               ,Ports and terminals  ,90
+MPAs               ,Recreational boat use,16449
+MPAs               ,Shipping           ,205292
+MPAs               ,Underwater cables   ,8921
+MPAs               ,Windfarm areas      ,13
+Oil lease areas      ,Aquaculture        ,1537
+Oil lease areas      ,Commercial fishing  ,1143603
+Oil lease areas      ,IPAs               ,30228
+Oil lease areas      ,MPAs               ,747424
+Oil lease areas      ,Oil lease areas      ,NA
+Oil lease areas      ,Petroleum pipelines ,6292
+Oil lease areas      ,Ports and terminals  ,175
+Oil lease areas      ,Recreational boat use,56126
+Oil lease areas      ,Shipping           ,245139
+Oil lease areas      ,Underwater cables   ,1572
+Oil lease areas      ,Windfarm areas      ,15698
+Petroleum pipelines ,Aquaculture        ,4
+Petroleum pipelines ,Commercial fishing  ,8090
+Petroleum pipelines ,IPAs               ,0
+Petroleum pipelines ,MPAs               ,1271
+Petroleum pipelines ,Oil lease areas      ,6292
+Petroleum pipelines ,Petroleum pipelines ,NA
+Petroleum pipelines ,Ports and terminals  ,11
+Petroleum pipelines ,Recreational boat use,0
+Petroleum pipelines ,Shipping           ,2328
+Petroleum pipelines ,Underwater cables   ,16
+Petroleum pipelines ,Windfarm areas      ,864
+Ports and terminals  ,Aquaculture        ,30
+Ports and terminals  ,Commercial fishing  ,243
+Ports and terminals  ,IPAs               ,13
+Ports and terminals  ,MPAs               ,90
+Ports and terminals  ,Oil lease areas      ,175
+Ports and terminals  ,Petroleum pipelines ,11
+Ports and terminals  ,Ports and terminals  ,NA
+Ports and terminals  ,Recreational boat use,89
+Ports and terminals  ,Shipping           ,513
+Ports and terminals  ,Underwater cables   ,0
+Ports and terminals  ,Windfarm areas      ,0
+Recreational boat use,Aquaculture        ,230
+Recreational boat use,Commercial fishing  ,79253
+Recreational boat use,IPAs               ,0
+Recreational boat use,MPAs               ,16449
+Recreational boat use,Oil lease areas      ,56126
+Recreational boat use,Petroleum pipelines ,0
+Recreational boat use,Ports and terminals  ,89
+Recreational boat use,Recreational boat use,NA
+Recreational boat use,Shipping           ,45143
+Recreational boat use,Underwater cables   ,2707
+Recreational boat use,Windfarm areas      ,4828
+Shipping           ,Aquaculture        ,1329
+Shipping           ,Commercial fishing  ,287175
+Shipping           ,IPAs               ,6403
+Shipping           ,MPAs               ,205292
+Shipping           ,Oil lease areas      ,245139
+Shipping           ,Petroleum pipelines ,2328
+Shipping           ,Ports and terminals  ,513
+Shipping           ,Recreational boat use,45143
+Shipping           ,Shipping           ,NA
+Shipping           ,Underwater cables   ,2561
+Shipping           ,Windfarm areas      ,5070
+Underwater cables   ,Aquaculture        ,0
+Underwater cables   ,Commercial fishing  ,8613
+Underwater cables   ,IPAs               ,0
+Underwater cables   ,MPAs               ,8921
+Underwater cables   ,Oil lease areas      ,1572
+Underwater cables   ,Petroleum pipelines ,16
+Underwater cables   ,Ports and terminals  ,0
+Underwater cables   ,Recreational boat use,2707
+Underwater cables   ,Shipping           ,2561
+Underwater cables   ,Underwater cables   ,NA
+Underwater cables   ,Windfarm areas      ,101
+Windfarm areas      ,Aquaculture        ,123
+Windfarm areas      ,Commercial fishing  ,18027
+Windfarm areas      ,IPAs               ,0
+Windfarm areas      ,MPAs               ,13
+Windfarm areas      ,Oil lease areas      ,15698
+Windfarm areas      ,Petroleum pipelines ,864
+Windfarm areas      ,Ports and terminals  ,0
+Windfarm areas      ,Recreational boat use,4828
+Windfarm areas      ,Shipping           ,5070
+Windfarm areas      ,Underwater cables   ,101
+Windfarm areas      ,Windfarm areas      ,NA
