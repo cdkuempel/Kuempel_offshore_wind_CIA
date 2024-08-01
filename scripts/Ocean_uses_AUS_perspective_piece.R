@@ -22,28 +22,20 @@ library(concaveman)
 
 sf_use_s2(F)
 
+#---------------------------#
+
 # Import Australia basemap, project, and add labels
 AUS <- st_read(here('data', 'STE_2016_AUST.gpkg'))
 AUS <- st_transform(AUS, 'EPSG:4326')
 labs <- c('NSW','VIC','QLD','SA','WA','TAS','NT','','')
 AUS$labs <- labs
 
-# Bounding box
-new_bbox <- bb(c(109.2335, -47.19364, 163.1921, -8.881893))
-
-# Import R objects
-no.uses_r_final <- rast(here('output_data', 'ocean_uses', 'no.uses_r_final.tif'))
-no.uses_sf_prj_all <- readRDS(here('output_data', 'ocean_uses', 'no_uses_sf_prj_all'))
-uses_area_final <- st_read(here('output_data', 'ocean_uses', 'uses_area_final.gpkg'))
-
-#---------------------------#
-
 # Import ocean use layers
-uses_sf_eez <- readRDS(here('output_data', 'ocean_uses', 'uses_sf_eez'))
+uses_sf_eez <- readRDS(here('output_data/ocean_uses/uses_sf_eez'))
 
 # Create list of distinct uses
 names(uses_sf_eez)
-no.uses_sf_eez <- uses_sf_eez[c('cables_active_csiro', 'oil_lease_areas_AUS_NOPTA',
+no_uses_sf_eez <- uses_sf_eez[c('cables_active_csiro', 'oil_lease_areas_AUS_NOPTA',
                                 'rec_boats_AUS_csiro', 
                                 'updatedpetroleumpipelines_AUS_aodn',
                                 'Ports_terms', 'wind_farms_dec', 
@@ -51,13 +43,16 @@ no.uses_sf_eez <- uses_sf_eez[c('cables_active_csiro', 'oil_lease_areas_AUS_NOPT
 
 #-----Additional layers to add-----#
 
-## SHIPPING
+### SHIPPING
+
+## Download data from the following link:
+## https://www.operations.amsa.gov.au/Spatial/DataServices/DigitalData
 
 # Import shipping layer
-shipping <- st_read(here('raw_data', 'cts_srr_08_2023_pt.shp'))
+# shipping <- st_read(here('raw_data/ocean_uses/cts_srr_08_2023_pt.shp'))
 
 # Add shipping to list
-no.uses_sf_eez <- append(no.uses_sf_eez, lst(shipping))
+no_uses_sf_eez <- append(no_uses_sf_eez, lst(shipping))
 
 
 ## RECREATION PARKS
@@ -78,7 +73,7 @@ unique(rec_parks$IUCN)
 rec_parks <- filter(rec_parks, IUCN == 'V')
 
 # Add to list
-no.uses_sf_eez <- append(no.uses_sf_eez, lst(rec_parks))
+no_uses_sf_eez <- append(no_uses_sf_eez, lst(rec_parks))
 
 
 ## MPAs and IPAs - 2022
@@ -87,16 +82,16 @@ no.uses_sf_eez <- append(no.uses_sf_eez, lst(rec_parks))
 MPAs <- st_read(here('raw_data', 'Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp'))
 
 # Add to list
-no.uses_sf_eez <- append(no.uses_sf_eez, lst(MPAs))
+no_uses_sf_eez <- append(no_uses_sf_eez, lst(MPAs))
 
 # Import IPA data
 IPAs <- st_read(here('raw_data', 'ipa_dedicated.shp'))
 
 # Add to list
-no.uses_sf_eez <- append(no.uses_sf_eez, lst(IPAs))
+no_uses_sf_eez <- append(no_uses_sf_eez, lst(IPAs))
 
 # Save
-saveRDS(no.uses_sf_eez, here('output_data','ocean_uses', 'no_uses_sf_eez'))
+saveRDS(no_uses_sf_eez, here('output_data','ocean_uses', 'no_uses_sf_eez'))
 
 
 #-----Rasterise to EEZ extent-----#
@@ -112,10 +107,10 @@ r_fun <- function(x) {
 }
 
 # Convert 'fishing_all' to sf dataframe
-no.uses_sf_eez$fishing_all <- st_as_sf(no.uses_sf_eez$fishing_all)
+no_uses_sf_eez$fishing_all <- st_as_sf(no_uses_sf_eez$fishing_all)
 
 # Rasterise all
-no.uses_r_lst <- lapply(no.uses_sf_eez, r_fun)
+no_uses_r_lst <- lapply(no_uses_sf_eez, r_fun)
 
 
 ## AQUACULTURE
@@ -186,21 +181,21 @@ st_write(AC_poly_all, here('output_data', 'ocean_uses', 'AC_poly_all.gpkg'))
 AC_r <- r_fun(AC_poly_all)
 
 # Resample aquaculture to align extent
-AC_r_rsmp <- resample(AC_r, no.uses_r_lst$cables_active_csiro,
+AC_r_rsmp <- resample(AC_r, no_uses_r_lst$cables_active_csiro,
                       method = 'near')
 
 # Add aquaculture to raster list
-no.uses_r_lst <- append(no.uses_r_lst, lst(AC_r_rsmp))
+no_uses_r_lst <- append(no_uses_r_lst, lst(AC_r_rsmp))
 
 # # Check
-# lapply(no.uses_r_lst, summary)
+# lapply(no_uses_r_lst, summary)
 
 # Overlay using the sum of overlapping grid cells (all 1)
-no.uses_r <- rast(no.uses_r_lst)
-no.uses_r <- app(no.uses_r, sum)
+no_uses_r <- rast(no_uses_r_lst)
+no_uses_r <- app(no_uses_r, sum)
 
 # Mask uses raster with AUS to remove land areas
-uses_mask <- mask(no.uses_r, vect(AUS), inverse = T)
+uses_mask <- mask(no_uses_r, vect(AUS), inverse = T)
 
 
 ## Crop to EEZ
@@ -228,18 +223,18 @@ eez_boundary <- concaveman(eez)
 eez_boundary <- st_zm(eez_boundary)
 
 # Crop
-no.uses_r_final <- mask(uses_mask, vect(eez_boundary))
+no_uses_r_final <- mask(uses_mask, vect(eez_boundary))
 
 # Save
-writeRaster(no.uses_r_final, here('output_data', 'ocean_uses', 'no.uses_r_final.tif'))
+writeRaster(no_uses_r_final, here('output_data', 'ocean_uses', 'no_uses_r_final.tif'))
 
 
 #-----FIGURES-----#
 
-# Map of no.uses
-no.uses_map <- 
-  tm_shape(no.uses_r_final) +
-  tm_raster(title = 'No.uses',
+# Map of no_uses
+no_uses_map <- 
+  tm_shape(no_uses_r_final) +
+  tm_raster(title = 'no_uses',
             palette = 'YlGn',
             style = 'cont',
             legend.reverse = T) +
@@ -256,42 +251,42 @@ no.uses_map <-
   tm_scale_bar(breaks = c(0,400,800,1200),
                text.size = 0.7, 
                position=c(0.02,0.0001))
-no.uses_map
+no_uses_map
 
 # Save
-tmap_save(no.uses_map, here('figures', 'no_uses_map_persp.png'))
+tmap_save(no_uses_map, here('figures', 'no_uses_map_persp.png'))
 
 
 ### Total area occupied by varying number of users across Australia
 
 # Calculate area covered by each value
-no.uses_area <- expanse(no.uses_r_final, unit = 'km', byValue = T)
+no_uses_area <- expanse(no_uses_r_final, unit = 'km', byValue = T)
 
 # Filter to exclude zeros
-no.uses_area_2 <- filter(no.uses_area, value != 0)
+no_uses_area_2 <- filter(no_uses_area, value != 0)
 
 # Percent of EEZ containing one use
-(no.uses_area_2$area[1]/(sum(no.uses_area_2$area)))*100
+(no_uses_area_2$area[1]/(sum(no_uses_area_2$area)))*100
 
 # Percent of EEZ containing multiple uses
-(sum(no.uses_area_2$area[2:6])/(sum(no.uses_area_2$area)))*100
+(sum(no_uses_area_2$area[2:6])/(sum(no_uses_area_2$area)))*100
 
 # Area (Km2) of EEZ containing multiple uses
-sum(no.uses_area_2$area[2:6])
+sum(no_uses_area_2$area[2:6])
 
-# Barplot with no.uses on x axis
-no.uses_bp <- ggplot(no.uses_area_2) +
+# Barplot with no_uses on x axis
+no_uses_bp <- ggplot(no_uses_area_2) +
   geom_bar(aes(x = as.factor(value), y = area/1000000), 
            stat = 'identity', col = 'black', fill = 'green4') +
-  labs(x = '\nNo.uses', y = expression('Total area' ~ '(mil' ~ Km^2*')')) +
+  labs(x = '\nno_uses', y = expression('Total area' ~ '(mil' ~ Km^2*')')) +
   theme_classic() +
   theme(axis.title=element_text(size=15),
         axis.text=element_text(size=12)) + 
   scale_y_continuous(labels = comma)
-no.uses_bp
+no_uses_bp
 
 # Save
-ggsave(here('figures', 'no_uses_bp.png'), no.uses_bp,
+ggsave(here('figures', 'no_uses_bp.png'), no_uses_bp,
        width = 8, height = 5)
 
 
@@ -309,10 +304,10 @@ ggsave(here('figures', 'no_uses_bp.png'), no.uses_bp,
 # }
 # 
 # # Rasterise
-# no.uses_r_lst_2 <- lapply(no.uses_sf_eez, r_fun_2)
+# no_uses_r_lst_2 <- lapply(no_uses_sf_eez, r_fun_2)
 # 
 # # Make the names 'prettier'
-# names(no.uses_r_lst_2) <- c('Underwater cables',
+# names(no_uses_r_lst_2) <- c('Underwater cables',
 #                             'Oil lease areas',
 #                             'Recreational boat use', 'Petroleum pipelines',
 #                             'Ports and terminals', 'Wind farm areas', 
@@ -321,7 +316,7 @@ ggsave(here('figures', 'no_uses_bp.png'), no.uses_bp,
 #                             'MPAs', 'IPAs')
 # 
 # # Calculate area for each industry - rasters
-# industry_area_lst <- lapply(no.uses_r_lst_2, expanse, unit = 'km')
+# industry_area_lst <- lapply(no_uses_r_lst_2, expanse, unit = 'km')
 # 
 # # Add layer name to each dataframe
 # industry_area_lst  <- industry_area_lst %>%  
@@ -357,15 +352,15 @@ ggsave(here('figures', 'no_uses_bp.png'), no.uses_bp,
 ## Calculate area for each industry - sf
 
 # Add aquaculture to sf list
-no.uses_sf_eez <- append(no.uses_sf_eez, lst(AC_poly_all))
+no_uses_sf_eez <- append(no_uses_sf_eez, lst(AC_poly_all))
 
 # Project coordinates
-no.uses_sf_prj <- lapply(no.uses_sf_eez, 
+no_uses_sf_prj <- lapply(no_uses_sf_eez, 
                          st_transform, 
                          '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84')
 
 # Create list of points and lines to buffer
-pts_lines <- no.uses_sf_prj[c('cables_active_csiro',
+pts_lines <- no_uses_sf_prj[c('cables_active_csiro',
                               'updatedpetroleumpipelines_AUS_aodn',
                               'Ports_terms', 'shipping')]
 
@@ -378,13 +373,13 @@ pts_lines <- no.uses_sf_prj[c('cables_active_csiro',
 pts_lines <- lapply(pts_lines, buffer_1km)
 
 # Remove original points and lines from list
-no.uses_sf_prj_polys <- no.uses_sf_prj[-c(1,4,5,9)]
+no_uses_sf_prj_polys <- no_uses_sf_prj[-c(1,4,5,9)]
 
 # Add buffered points and lines to list
-no.uses_sf_prj_all <- c(no.uses_sf_prj_polys, pts_lines)
+no_uses_sf_prj_all <- c(no_uses_sf_prj_polys, pts_lines)
 
 # Make the names 'prettier'
-names(no.uses_sf_prj_all) <- c('Oil lease areas', 'Recreational boat use', 
+names(no_uses_sf_prj_all) <- c('Oil lease areas', 'Recreational boat use', 
                                'Wind farm areas', 'Commercial fishing',
                                'WindFarm_WA', 'Recreational parks',
                                'MPAs', 'IPAs', 'Aquaculture',
@@ -392,8 +387,8 @@ names(no.uses_sf_prj_all) <- c('Oil lease areas', 'Recreational boat use',
                                'Ports and terminals', 'Shipping')
 
 # Add layer name to each dataframe
-no.uses_sf_prj_all <- no.uses_sf_prj_all %>%  
-  map2(names(no.uses_sf_prj_all), ~mutate(.x, layer = .y))
+no_uses_sf_prj_all <- no_uses_sf_prj_all %>%  
+  map2(names(no_uses_sf_prj_all), ~mutate(.x, layer = .y))
 
 
 ### Dissolve polygons
@@ -402,10 +397,10 @@ no.uses_sf_prj_all <- no.uses_sf_prj_all %>%
 ## Will do them separately
 
 # Make geoms valid
-no.uses_sf_prj_all <- lapply(no.uses_sf_prj_all, st_make_valid)
+no_uses_sf_prj_all <- lapply(no_uses_sf_prj_all, st_make_valid)
 
 # Save list
-saveRDS(no.uses_sf_prj_all, here('output_data', 'ocean_uses', 'no_uses_sf_prj_all'))
+saveRDS(no_uses_sf_prj_all, here('output_data', 'ocean_uses', 'no_uses_sf_prj_all'))
 
 
 ## Rename geometry columns
@@ -419,11 +414,11 @@ rename_geometry <- function(g, name){
 }
 
 # Rename
-no.uses_geoms <- lapply(no.uses_sf_prj_all, rename_geometry, 'geometry')
+no_uses_geoms <- lapply(no_uses_sf_prj_all, rename_geometry, 'geometry')
 
 # Get layer column with geom
 uses_area_geoms <- bind_rows(lapply(
-  no.uses_geoms, "[", 'layer'))
+  no_uses_geoms, "[", 'layer'))
 
 # Dissolve
 uses_area_diss <- uses_area_geoms %>%
