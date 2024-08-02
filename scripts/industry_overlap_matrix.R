@@ -15,8 +15,6 @@ library(raster)
 
 sf_use_s2(F)
 
-# Should we be using an Australian specific equal area projection?
-
 # Import project ocean uses data
 no_uses_sf_prj_all <- readRDS(here('output_data/ocean_uses/no_uses_sf_prj_all'))
 
