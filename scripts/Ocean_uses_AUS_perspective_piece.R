@@ -19,16 +19,18 @@ library(spatialEco)
 library(scales)
 library(stars)
 library(concaveman)
+library(rnaturalearth)
+library(rnaturalearthdata)
 
 sf_use_s2(F)
 
 #---------------------------#
 
-# Import Australia basemap, project, and add labels
-AUS <- st_read(here('data', 'STE_2016_AUST.gpkg'))
-AUS <- st_transform(AUS, 'EPSG:4326')
-labs <- c('NSW','VIC','QLD','SA','WA','TAS','NT','','')
-AUS$labs <- labs
+# Import world sf dataframe
+world <- ne_countries(scale = 'medium', returnclass = 'sf')
+
+# Filter for Australia
+AUS <- subset(world, admin == 'Australia')
 
 # Import ocean use layers
 uses_sf_eez <- readRDS(here('output_data/ocean_uses/uses_sf_eez'))
@@ -49,19 +51,23 @@ no_uses_sf_eez <- uses_sf_eez[c('cables_active_csiro', 'oil_lease_areas_AUS_NOPT
 ## https://www.operations.amsa.gov.au/Spatial/DataServices/DigitalData
 
 # Import shipping layer
-# shipping <- st_read(here('raw_data/ocean_uses/cts_srr_08_2023_pt.shp'))
+# shipping <- st_read(here('raw_data/ocean_uses/XXXXXXXX'))
 
 # Add shipping to list
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(shipping))
 
 
-## RECREATION PARKS
+### RECREATION PARKS
+
+## Download data from the following link:
+## https://www.dcceew.gov.au/environment/land/nrs/science/capad
+
 ## From 'capad' dataset - IUCN category 5:
 ## "Protected Landscape / Seascape: protected area managed 
 ## mainly for landscape/seascape conservation and recreation"
 
-# Import
-rec_parks <- st_read(here('raw_data', 'capad_2016_marine.shp'))
+# # Import
+# rec_parks <- st_read(here('raw_data/ocean_uses/XXXXXX'))
 
 # Column names
 colnames(rec_parks)
@@ -76,22 +82,25 @@ rec_parks <- filter(rec_parks, IUCN == 'V')
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(rec_parks))
 
 
-## MPAs and IPAs - 2022
+### MPAs and IPAs - 2022
 
-# Import MPA data
-MPAs <- st_read(here('raw_data', 'Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp'))
+## Download link:
+## https://www.dcceew.gov.au/environment/land/nrs/science/capad#:~:text=CAPAD%20is%20a%20textual%20and,cent)%20of%20the%20Australian%20landmass.
+
+# # Import MPA data
+# MPAs <- st_read(here('raw_data/ocean_uses/#####'))
 
 # Add to list
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(MPAs))
 
 # Import IPA data
-IPAs <- st_read(here('raw_data', 'ipa_dedicated.shp'))
+IPAs <- st_read(here('raw_data/ocean_uses/ipa_dedicated.shp'))
 
 # Add to list
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(IPAs))
 
 # # Save
-# saveRDS(no_uses_sf_eez, here('output_data','ocean_uses', 'no_uses_sf_eez'))
+# saveRDS(no_uses_sf_eez, here('output_data/ocean_uses/no_uses_sf_eez'))
 
 
 #-----Rasterise to EEZ extent-----#
@@ -116,8 +125,8 @@ no_uses_r_lst <- lapply(no_uses_sf_eez, r_fun)
 ## AQUACULTURE
 
 # Import aquaculture data
-AC_pts <- st_read(here('raw_data', 'Aquaculture', 'All_Australian_aquaculture_point_data.shp'))
-AC_poly <- st_read(here('raw_data', 'Aquaculture', 'All_Australian_aquaculture_polygon_data.shp'))
+AC_pts <- st_read(here('raw_data/ocean_uses/All_Australian_aquaculture_point_data.shp'))
+AC_poly <- st_read(here('raw_data/ocean_uses/All_Australian_aquaculture_polygon_data.shp'))
 
 # Remove NT points
 AC_pts <- filter(AC_pts, State != 'NT')
@@ -135,7 +144,7 @@ AC_pts_erase_sf<- st_transform(AC_pts_erase_sf, '+proj=moll +lon_0=0 +x_0=0 +y_0
 AC_poly_erase_sf <- st_transform(AC_poly_erase_sf, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84')
 
 # # Save polygon file
-# st_write(AC_poly_erase_sf, here('output_data', 'ocean_uses', 'AC_poly_erase_sf.gpkg'))
+# st_write(AC_poly_erase_sf, here('output_data/ocean_uses/AC_poly_erase_sf.gpkg'))
 
 
 
@@ -158,8 +167,8 @@ AC_poly_all$field <- 1
 # Transform crs
 AC_poly_all <- st_transform(AC_poly_all, 'EPSG:4326')
 
-# Save
-st_write(AC_poly_all, here('output_data', 'ocean_uses', 'AC_poly_all.gpkg'))
+# # Save
+# st_write(AC_poly_all, here('output_data/ocean_uses/AC_poly_all.gpkg'))
 
 # Rasterise
 AC_r <- r_fun(AC_poly_all)
@@ -185,7 +194,7 @@ uses_mask <- mask(no_uses_r, vect(AUS), inverse = T)
 ## Crop to EEZ
 
 # Import EEZ
-eez <- st_read(here('raw_data', 'EEZLimitContinental.gpkg'))
+eez <- st_read(here('raw_data/ocean_uses/EEZLimitContinental.gpkg'))
 
 # Filter to cover relevant area
 eez <- filter(
@@ -209,8 +218,8 @@ eez_boundary <- st_zm(eez_boundary)
 # Crop
 no_uses_r_final <- mask(uses_mask, vect(eez_boundary))
 
-# Save
-writeRaster(no_uses_r_final, here('output_data', 'ocean_uses', 'no_uses_r_final.tif'))
+# # Save
+# writeRaster(no_uses_r_final, here('output_data/ocean_uses/no_uses_r_final.tif'))
 
 
 #-----FIGURES-----#
@@ -238,7 +247,7 @@ no_uses_map <-
 no_uses_map
 
 # Save
-tmap_save(no_uses_map, here('figures', 'no_uses_map_persp.png'))
+tmap_save(no_uses_map, here('figures/Figure4A_num_ocean_uses_map.png'))
 
 
 ### Total area occupied by varying number of users across Australia
@@ -346,7 +355,7 @@ test <- st_crop(uses_area_diss, st_transform(eez_boundary,
                 '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84'))
 
 # # Save
-# st_write(uses_area_diss, here('output_data', 'ocean_uses', 'uses_area_diss.gpkg'))
+# st_write(uses_area_diss, here('output_data/ocean_uses/uses_area_diss.gpkg'))
 
 
 ## Create new dataframe to combine the wind farm data
@@ -369,4 +378,4 @@ uses_area_final <- rbind(st_drop_geometry(uses_area_diss)[1:11, ],
 uses_area_final$area_km2 <- as.numeric(uses_area_final$area_km2)
 
 # # Save
-# st_write(uses_area_final, here('output_data', 'ocean_uses', 'uses_area_final.gpkg'))
+# st_write(uses_area_final, here('output_data/ocean_uses/uses_area_final.gpkg'))
