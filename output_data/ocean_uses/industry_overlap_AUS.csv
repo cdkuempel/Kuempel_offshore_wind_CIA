@@ -1,0 +1,12 @@
+                   ,Aquaculture,Commercialfishing,   IPAs,   MPAs,Oilleaseareas,Petroleumpipelines,Portsandterminals,Recreationalboatuse,Shipping,Underwatercables,Windfarmareas
+Aquaculture        ,          0,             1989,     47,   1291,         1537,                 4,               30,                230,    1329,               0,          123
+Commercialfishing  ,       1989,                0, 124663, 648224,      1143603,              8090,              243,              79253,  287175,            8613,        18027
+IPAs               ,         47,           124663,      0,  51084,        30228,                 0,               13,                  0,    6403,               0,            0
+MPAs               ,       1291,           648224,  51084,      0,       747424,              1271,               90,              16449,  205292,            8921,           13
+Oilleaseareas      ,       1537,          1143603,  30228, 747424,            0,              6292,              175,              56126,  245139,            1572,        15698
+Petroleumpipelines ,          4,             8090,      0,   1271,         6292,                 0,               11,                  0,    2328,              16,          864
+Portsandterminals  ,         30,              243,     13,     90,          175,                11,                0,                 89,     513,               0,            0
+Recreationalboatuse,        230,            79253,      0,  16449,        56126,                 0,               89,                  0,   45143,            2707,         4828
+Shipping           ,       1329,           287175,   6403, 205292,       245139,              2328,              513,              45143,       0,            2561,         5070
+Underwatercables   ,          0,             8613,      0,   8921,         1572,                16,                0,               2707,    2561,               0,          101
+Windfarmareas      ,        123,            18027,      0,     13,        15698,               864,                0,               4828,    5070,             101,            0
