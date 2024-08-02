@@ -90,8 +90,8 @@ IPAs <- st_read(here('raw_data', 'ipa_dedicated.shp'))
 # Add to list
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(IPAs))
 
-# Save
-saveRDS(no_uses_sf_eez, here('output_data','ocean_uses', 'no_uses_sf_eez'))
+# # Save
+# saveRDS(no_uses_sf_eez, here('output_data','ocean_uses', 'no_uses_sf_eez'))
 
 
 #-----Rasterise to EEZ extent-----#
@@ -134,25 +134,9 @@ AC_poly_erase_sf <- st_as_sf(AC_poly_erase)
 AC_pts_erase_sf<- st_transform(AC_pts_erase_sf, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84')
 AC_poly_erase_sf <- st_transform(AC_poly_erase_sf, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84')
 
-# Save polygon file
-st_write(AC_poly_erase_sf, here('output_data', 'ocean_uses', 'AC_poly_erase_sf.gpkg'))
+# # Save polygon file
+# st_write(AC_poly_erase_sf, here('output_data', 'ocean_uses', 'AC_poly_erase_sf.gpkg'))
 
-# Check points
-tm_shape(AUS, bbox = bb(
-  filter(AUS, STE_NAME16 == 'Northern Territory'))) +
-  tm_polygons(alpha = 0.3, border.alpha = 0.3) +
-  tm_shape(AC_pts_erase_sf) +
-  tm_dots(col = 'red')
-
-# Check polygons - closer look at NSW
-tm_shape(AUS, 
-         bbox = bb(
-           filter(AUS,STE_NAME16 == 'New South Wales'))) +
-  tm_polygons(alpha = 0.3,
-              border.col = 'red',
-              border.alpha = 0.3) +
-  tm_shape(AC_poly_erase_sf) +
-  tm_polygons()
 
 
 ## Create 1 Km buffer for points
@@ -274,82 +258,8 @@ no_uses_area_2 <- filter(no_uses_area, value != 0)
 # Area (Km2) of EEZ containing multiple uses
 sum(no_uses_area_2$area[2:6])
 
-# Barplot with no_uses on x axis
-no_uses_bp <- ggplot(no_uses_area_2) +
-  geom_bar(aes(x = as.factor(value), y = area/1000000), 
-           stat = 'identity', col = 'black', fill = 'green4') +
-  labs(x = '\nno_uses', y = expression('Total area' ~ '(mil' ~ Km^2*')')) +
-  theme_classic() +
-  theme(axis.title=element_text(size=15),
-        axis.text=element_text(size=12)) + 
-  scale_y_continuous(labels = comma)
-no_uses_bp
 
-# Save
-ggsave(here('figures', 'no_uses_bp.png'), no_uses_bp,
-       width = 8, height = 5)
-
-
-# ### Area of use for each industry
-# 
-# ## Change zeros to NA - lets go back to our sf list
-# 
-# # Second function to rasterise
-# r_fun_2 <- function(x) {
-#   rasterize(x, rast(xmin = 109.2335, xmax = 163.1921,
-#                     ymin = -47.1936, ymax = -8.8819),
-#             field = 1, 
-#             background = NA, # NA instead of zero for area calc
-#             touches = T)
-# }
-# 
-# # Rasterise
-# no_uses_r_lst_2 <- lapply(no_uses_sf_eez, r_fun_2)
-# 
-# # Make the names 'prettier'
-# names(no_uses_r_lst_2) <- c('Underwater cables',
-#                             'Oil lease areas',
-#                             'Recreational boat use', 'Petroleum pipelines',
-#                             'Ports and terminals', 'Wind farm areas', 
-#                             'Commercial fishing', 'WindFarm_WA', 'Shipping',
-#                             'Recreational parks', 'Aquaculture',
-#                             'MPAs', 'IPAs')
-# 
-# # Calculate area for each industry - rasters
-# industry_area_lst <- lapply(no_uses_r_lst_2, expanse, unit = 'km')
-# 
-# # Add layer name to each dataframe
-# industry_area_lst  <- industry_area_lst %>%  
-#   map2(names(industry_area_lst), ~mutate(.x, layer = .y))
-# 
-# # Sum the wind farm areas
-# industry_area_lst$`Wind farm areas`$area <- 
-#   industry_area_lst$`Wind farm areas`$area + industry_area_lst$WindFarm_WA$area
-# 
-# # Remove WindFarm_WA from list (8th element)
-# industry_area_lst <- industry_area_lst[-8]
-# 
-# # Bind all data
-# industry_area_df <- bind_rows(industry_area_lst)
-
-# # Barplot with industries on x axis and area on y axis
-# area_bp <- ggplot(industry_area_df) +
-#   geom_bar(aes(x = layer, y = area), 
-#            stat = 'identity', col = 'black', fill = 'green4') +
-#   labs(x = '', y = expression('Total area' ~ (Km^2))) +
-#   theme_classic() +
-#   theme(axis.title=element_text(size=15),
-#         axis.text=element_text(size=12),
-#         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
-#   scale_y_continuous(labels = comma)
-# area_bp
-# 
-# # Save
-# ggsave(here('output', 'area_bp.png'), area_bp,
-#        width = 8, height = 5)
-
-
-## Calculate area for each industry - sf
+### Calculate area for each industry
 
 # Add aquaculture to sf list
 no_uses_sf_eez <- append(no_uses_sf_eez, lst(AC_poly_all))
@@ -399,8 +309,8 @@ no_uses_sf_prj_all <- no_uses_sf_prj_all %>%
 # Make geoms valid
 no_uses_sf_prj_all <- lapply(no_uses_sf_prj_all, st_make_valid)
 
-# Save list
-saveRDS(no_uses_sf_prj_all, here('output_data', 'ocean_uses', 'no_uses_sf_prj_all'))
+# # Save list
+# saveRDS(no_uses_sf_prj_all, here('output_data', 'ocean_uses', 'no_uses_sf_prj_all'))
 
 
 ## Rename geometry columns
@@ -435,8 +345,8 @@ uses_area_diss <- st_crop(uses_area_diss, eez_boundary)
 test <- st_crop(uses_area_diss, st_transform(eez_boundary, 
                 '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84'))
 
-# Save
-st_write(uses_area_diss, here('output_data', 'ocean_uses', 'uses_area_diss.gpkg'))
+# # Save
+# st_write(uses_area_diss, here('output_data', 'ocean_uses', 'uses_area_diss.gpkg'))
 
 
 ## Create new dataframe to combine the wind farm data
@@ -458,22 +368,5 @@ uses_area_final <- rbind(st_drop_geometry(uses_area_diss)[1:11, ],
 # Convert area_km2 to numeric
 uses_area_final$area_km2 <- as.numeric(uses_area_final$area_km2)
 
-# Save
-st_write(uses_area_final, here('output_data', 'ocean_uses', 'uses_area_final.gpkg'))
-
-# Barplot with industries on x axis and area on y axis
-area_bp_2 <- 
-  ggplot(uses_area_final) +
-  geom_bar(aes(x = layer, y = area_km2/1000000), 
-           stat = 'identity', col = 'black', fill = 'green4') +
-  labs(x = '', y = expression('Total area' ~ '(mil' ~ Km^2*')')) +
-  theme_classic() +
-  theme(axis.title=element_text(size=15),
-        axis.text=element_text(size=10),
-        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
-  scale_y_continuous(labels = comma)
-area_bp_2
-
-# Save
-ggsave(here('output_data', 'ocean_uses', 'area_bp_2.png'), area_bp_2,
-       width = 8, height = 5)
+# # Save
+# st_write(uses_area_final, here('output_data', 'ocean_uses', 'uses_area_final.gpkg'))
