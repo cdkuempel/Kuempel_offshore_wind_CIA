@@ -15,6 +15,8 @@ library(raster)
 
 sf_use_s2(F)
 
+### Link to figshare for no_uses_sf_prj_all'
+### https://figshare.com/articles/dataset/Kuempel_offshore_wind_CIA/26506846
 # Import project ocean uses data
 no_uses_sf_prj_all <- readRDS(here('output_data/ocean_uses/no_uses_sf_prj_all'))
 
