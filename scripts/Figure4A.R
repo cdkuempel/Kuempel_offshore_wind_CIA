@@ -32,6 +32,8 @@ world <- ne_countries(scale = 'medium', returnclass = 'sf')
 # Filter for Australia
 AUS <- subset(world, admin == 'Australia')
 
+### Link to figshare for 'uses_sf_eez'
+### https://figshare.com/articles/dataset/Kuempel_offshore_wind_CIA/26506846
 # Import ocean use layers
 uses_sf_eez <- readRDS(here('output_data/ocean_uses/uses_sf_eez'))
 
