@@ -16,7 +16,7 @@ library(raster)
 sf_use_s2(F)
 
 # Import project ocean uses data
-no_uses_sf_prj_all <- readRDS(here('output_data/ocean_uses/no_uses_sf_prj_all'))
+no_uses_sf_prj_all <- readRDS(here('output_data/ocean_uses/no_uses_sf_prj_all')) #download this data from the figshare link in the repo
 
 # Project
 list_sf_trans <- lapply(no_uses_sf_prj_all, function(x) st_transform(x, "+proj=aea +lat_0=0 +lon_0=132 +lat_1=-18 +lat_2=-36 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs

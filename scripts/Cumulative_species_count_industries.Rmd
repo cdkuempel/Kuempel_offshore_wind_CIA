@@ -19,8 +19,6 @@ library(ggplot2)
 
 
 ```{r}
-#sp_dat<-read.csv(here("raw_data/Industry_species/Offshore_EIA_species_INDUSTRY_EPBC_only_31.01.24.csv"))
-
 sp_dat<-read.csv(here("raw_data/Industry_species/Offshore_EIA_species_INDUSTRY_EPBC_only_31.01.24.csv"))
 
 sub_sp_dat<-sp_dat %>% 
@@ -144,6 +142,7 @@ ggplot(habitat_wind_sp_only, aes(x = Industry, y = Count, fill = factor(Habitat,
 ```{r}
 ggsave(here("figures/Figure3B_num_species_per_farm_by_habitat.png"), width = 4, height = 2)
 ```
+
 ```{r}
 table(wind_sp_only2$Industry)
 ```

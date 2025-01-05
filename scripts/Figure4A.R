@@ -33,7 +33,7 @@ world <- ne_countries(scale = 'medium', returnclass = 'sf')
 AUS <- subset(world, admin == 'Australia')
 
 # Import ocean use layers
-uses_sf_eez <- readRDS(here('output_data/ocean_uses/uses_sf_eez'))
+uses_sf_eez <- readRDS(here('output_data/ocean_uses/uses_sf_eez')) #download this layer from the figshare link in the repo
 
 # Create list of distinct uses
 names(uses_sf_eez)
