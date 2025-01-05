@@ -1,6 +1,6 @@
-# Kuempel_offshore_wind_CIA
+# Kuempel et al. 2025 Frameworks and best practices for CIA in offsher energy development
 
-This repository accompanies the publication by Kuempel et al. "Frameworks and best practices for cumulative impact accounting in offshore energy development"
+This repository accompanies the publication by [Kuempel et al. 2025](https://www.sciencedirect.com/science/article/pii/S0308597X24005712) "Frameworks and best practices for cumulative impact accounting in offshore energy development" published in Marine Policy.
 
 To recreate the analysis use the scripts provided:
 
